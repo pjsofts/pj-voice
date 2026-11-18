@@ -139,4 +139,4 @@ pytest
 
 ## License
 
-MIT. See [LICENSE](LICENSE). Built by [Pouria Jahandideh](https://github.com/pjsofts).
+MIT. See [LICENSE](LICENSE). Built by [Pouria Jahandideh](https://pouriajahandideh.com/). More of my work: [pouriajahandideh.com](https://pouriajahandideh.com/) · [AI Engineering course](https://pjsofts.github.io/).
