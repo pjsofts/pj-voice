@@ -1,0 +1,37 @@
+id: trattoria
+name: Trattoria reservations
+phone_numbers: ["+15550200"]
+timezone: America/Chicago
+greeting: Good evening, Trattoria Demo. Would you like to book a table?
+models:
+  llm: openai/gpt-4.1-mini
+  fallback_llm: openai/gpt-4o-mini
+instructions: |
+  You take table reservations for Trattoria Demo, open 5 to 10 PM every day.
+  Ask for the date and party size, call check_tables, offer two or three times,
+  get the name for the reservation, confirm everything, then call reserve.
+  We do not take orders or answer menu questions; say a server can help at the restaurant.
+transfer:
+  mode: static
+  targets:
+    - {id: manager, name: Manager, phone: "+15550299", description: Large groups and events}
+tools:
+  - name: check_tables
+    description: Available reservation times for a party on a date.
+    url: ${RESTAURANT_TOOLS_URL:-http://localhost:8200/tools}
+    parameters:
+      type: object
+      properties:
+        date: {type: string, description: YYYY-MM-DD}
+        party_size: {type: integer}
+      required: [date, party_size]
+  - name: reserve
+    description: Reserve one of the options returned by check_tables.
+    url: ${RESTAURANT_TOOLS_URL:-http://localhost:8200/tools}
+    parameters:
+      type: object
+      properties:
+        option_id: {type: string}
+        name: {type: string, description: Name for the reservation}
+        caller_phone: {type: string, x-injected: caller_phone}
+      required: [option_id, name]

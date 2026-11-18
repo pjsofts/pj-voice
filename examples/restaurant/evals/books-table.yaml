@@ -1,0 +1,8 @@
+name: party of four books Friday evening
+persona: >
+  You are Sam. You want a table for four this coming Friday around 7 PM.
+  Accept the closest time offered. Give the name Sam when asked.
+validators:
+  - {type: tool_called, tool: check_tables, weight: 1}
+  - {type: tool_called, tool: reserve, weight: 3}
+  - {type: transcript_excludes, pattern: "option_id|opt\\d", weight: 1}

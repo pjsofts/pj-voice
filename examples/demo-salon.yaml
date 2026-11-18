@@ -1,0 +1,116 @@
+# Example assistant for the bundled booking tool server (`pjvoice tools`).
+id: demo-salon
+name: Demo Salon receptionist
+phone_numbers: ["+15550100"]
+timezone: America/New_York
+greeting: Thanks for calling Demo Salon. How can I help you today?
+models:
+  llm: openai/gpt-4.1-mini
+  fallback_llm: openai/gpt-4o-mini
+  stt: deepgram/nova-3
+  tts: cartesia/sonic-2
+limits:
+  max_tool_steps: 6
+transfer:
+  mode: static
+  targets:
+    - id: front_desk
+      name: Front desk
+      phone: "+15550199"
+      description: A person at the salon, for anything you can't handle.
+flow:
+  initial: triage
+  global_instructions: |
+    You are the receptionist for Demo Salon. Be warm and brief.
+    At the start of every call, call find_customer once to look the caller up.
+  stages:
+    - name: triage
+      instructions: Find out what the caller needs, then switch to the right step.
+      tools: [find_customer, create_customer, list_services]
+      transitions:
+        - to: booking
+          when: The caller wants to book a new appointment.
+        - to: manage
+          when: The caller wants to check, move or cancel an existing appointment.
+    - name: booking
+      instructions: |
+        Book one appointment. If the caller is new, get their name and call create_customer first.
+        Use list_services to pick the service, check_availability for the day they want,
+        offer two or three times, confirm service, day and time, then call book_appointment.
+      tools: [create_customer, list_services, check_availability, book_appointment]
+      transitions:
+        - to: triage
+          when: The caller needs something other than a new booking.
+    - name: manage
+      instructions: |
+        Use list_appointments to find the appointment. To move it, call check_availability for the
+        same service, confirm the new time, then reschedule_appointment. To cancel, confirm first.
+      tools: [list_appointments, check_availability, reschedule_appointment, cancel_appointment]
+      transitions:
+        - to: triage
+          when: The caller needs something else.
+tools:
+  - name: find_customer
+    description: Look up the caller's profile and upcoming appointments by their phone number.
+    url: ${TOOLS_URL:-http://localhost:8100/tools}
+    headers: {Authorization: "Bearer ${PJVOICE_TOOLS_KEY}"}
+    parameters:
+      type: object
+      properties:
+        caller_phone: {type: string, x-injected: caller_phone}
+  - name: create_customer
+    description: Create a profile for a new caller.
+    url: ${TOOLS_URL:-http://localhost:8100/tools}
+    headers: {Authorization: "Bearer ${PJVOICE_TOOLS_KEY}"}
+    parameters:
+      type: object
+      properties:
+        name: {type: string, description: Caller's full name}
+        caller_phone: {type: string, x-injected: caller_phone}
+      required: [name]
+  - name: list_services
+    description: List services with duration and price.
+    url: ${TOOLS_URL:-http://localhost:8100/tools}
+    headers: {Authorization: "Bearer ${PJVOICE_TOOLS_KEY}"}
+  - name: check_availability
+    description: Open times for a service on a date.
+    url: ${TOOLS_URL:-http://localhost:8100/tools}
+    headers: {Authorization: "Bearer ${PJVOICE_TOOLS_KEY}"}
+    parameters:
+      type: object
+      properties:
+        service_id: {type: string}
+        date: {type: string, description: YYYY-MM-DD}
+      required: [service_id, date]
+  - name: book_appointment
+    description: Book a slot offered by check_availability for the identified caller.
+    url: ${TOOLS_URL:-http://localhost:8100/tools}
+    headers: {Authorization: "Bearer ${PJVOICE_TOOLS_KEY}"}
+    parameters:
+      type: object
+      properties:
+        slot_id: {type: string}
+      required: [slot_id]
+  - name: list_appointments
+    description: The identified caller's upcoming appointments.
+    url: ${TOOLS_URL:-http://localhost:8100/tools}
+    headers: {Authorization: "Bearer ${PJVOICE_TOOLS_KEY}"}
+  - name: reschedule_appointment
+    description: Move one of the caller's appointments to a slot offered by check_availability.
+    url: ${TOOLS_URL:-http://localhost:8100/tools}
+    headers: {Authorization: "Bearer ${PJVOICE_TOOLS_KEY}"}
+    parameters:
+      type: object
+      properties:
+        appointment_id: {type: string}
+        slot_id: {type: string}
+      required: [appointment_id, slot_id]
+  - name: cancel_appointment
+    description: Cancel one of the caller's appointments after they confirm.
+    url: ${TOOLS_URL:-http://localhost:8100/tools}
+    headers: {Authorization: "Bearer ${PJVOICE_TOOLS_KEY}"}
+    parameters:
+      type: object
+      properties:
+        appointment_id: {type: string}
+      required: [appointment_id]

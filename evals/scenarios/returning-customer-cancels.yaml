@@ -1,0 +1,11 @@
+name: returning customer books then cancels
+persona: >
+  Your name is Jordan Lee and you are an existing customer. First book a beard trim
+  for next Wednesday afternoon (accept any afternoon time). Then say you changed your
+  mind and ask to cancel that same appointment. Confirm when asked.
+caller_phone: "+15550111"
+validators:
+  - {type: tool_not_called, tool: create_customer, weight: 2}
+  - {type: tool_called, tool: book_appointment, weight: 2}
+  - {type: tool_called, tool: cancel_appointment, weight: 3}
+  - {type: appointment_count, equals: 0, weight: 3}

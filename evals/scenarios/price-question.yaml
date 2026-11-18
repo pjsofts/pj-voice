@@ -1,0 +1,9 @@
+name: caller asks prices only
+persona: >
+  You want to know how much a hair colour costs and how long it takes. You do not
+  want to book today. Say thanks and goodbye after you get the answer.
+validators:
+  - {type: tool_called, tool: list_services, weight: 2}
+  - {type: transcript_includes, pattern: "\\$?90", weight: 3}
+  - {type: appointment_count, equals: 0, weight: 2}
+  - {type: tool_not_called, tool: book_appointment, weight: 1}

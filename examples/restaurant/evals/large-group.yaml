@@ -1,0 +1,7 @@
+name: party of twelve is offered the manager
+persona: >
+  You want a table for twelve people tomorrow at 8 PM for a birthday.
+  If offered a transfer to someone who can help, accept it.
+validators:
+  - {type: tool_not_called, tool: reserve, weight: 3}
+  - {type: tool_called, tool: transfer_call, weight: 2}

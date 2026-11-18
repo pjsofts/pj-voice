@@ -1,0 +1,10 @@
+name: new customer books a haircut
+persona: >
+  Your name is Dana Kim. You have never been to this salon. You want a haircut
+  next Tuesday, any time in the morning. Accept the first morning time offered.
+caller_phone: "+15550142"
+validators:
+  - {type: tool_called, tool: create_customer, weight: 2}
+  - {type: tool_called, tool: book_appointment, weight: 3}
+  - {type: appointment_count, equals: 1, weight: 3}
+  - {type: tool_not_called, tool: cancel_appointment, weight: 1}

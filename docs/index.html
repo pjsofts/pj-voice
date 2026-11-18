@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PJ Voice: open source AI phone agents that do real work</title>
+<meta name="description" content="PJ Voice is an open source AI phone agent built on LiveKit. It books, moves and cancels real appointments safely. Plus a hands-on course on building voice agents.">
+<meta property="og:title" content="PJ Voice: open source AI phone agents">
+<meta property="og:description" content="Voice agents that do real work, safely. Stage graphs, safe tools, evals, and a free course on building voice agents.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#07070d">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2307070d'/%3E%3Cg fill='%23ff8a5b'%3E%3Crect x='6' y='13' width='3' height='6' rx='1.5'/%3E%3Crect x='11' y='9' width='3' height='14' rx='1.5'/%3E%3Crect x='16' y='5' width='3' height='22' rx='1.5'/%3E%3Crect x='21' y='10' width='3' height='12' rx='1.5'/%3E%3C/g%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#07070d; --bg2:#0d0d18; --card:#11111f; --line:#23233a;
+  --text:#ecebf5; --muted:#9b9ab3; --dim:#6c6b85;
+  --coral:#ff8a5b; --pink:#ff5fa2; --violet:#8b7bff; --cyan:#4fd1e8; --lime:#b5f36b;
+  --grad:linear-gradient(100deg,var(--coral),var(--pink) 45%,var(--violet));
+  --mono:ui-monospace,SFMono-Regular,"JetBrains Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+code,pre{font-family:var(--mono)}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+
+/* ── nav ── */
+nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(7,7,13,.72);border-bottom:1px solid rgba(255,255,255,.05)}
+nav .wrap{display:flex;align-items:center;gap:28px;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.01em;font-size:18px}
+.logo svg{width:26px;height:26px}
+nav .links{display:flex;gap:22px;margin-left:auto;font-size:14px;color:var(--muted)}
+nav .links a:hover{color:var(--text)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;font-weight:600;font-size:14px;transition:transform .15s,box-shadow .2s,background .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--grad);color:#120914;box-shadow:0 8px 30px -8px rgba(255,95,162,.55)}
+.btn-ghost{border:1px solid var(--line);background:rgba(255,255,255,.02)}
+.btn-ghost:hover{background:rgba(255,255,255,.06)}
+.btn svg{width:16px;height:16px}
+
+/* ── hero ── */
+.hero{position:relative;padding:96px 0 40px;overflow:hidden}
+.aurora{position:absolute;inset:-30% -10% auto;height:120%;pointer-events:none;filter:blur(80px);opacity:.55}
+.aurora span{position:absolute;border-radius:50%;mix-blend-mode:screen;animation:drift 18s ease-in-out infinite alternate}
+.aurora span:nth-child(1){width:520px;height:520px;left:8%;top:6%;background:#ff5fa2}
+.aurora span:nth-child(2){width:600px;height:600px;right:4%;top:0;background:#6a5cff;animation-delay:-6s}
+.aurora span:nth-child(3){width:420px;height:420px;left:40%;top:30%;background:#ff8a5b;animation-delay:-12s}
+@keyframes drift{to{transform:translate(60px,40px) scale(1.12)}}
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse at 50% 30%,#000 30%,transparent 75%);pointer-events:none}
+.hero .wrap{position:relative;text-align:center}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--muted);background:rgba(17,17,31,.7)}
+.pill b{color:var(--lime);font-weight:600}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 12px var(--lime);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.35}}
+h1{font-size:clamp(40px,7vw,84px);line-height:1.02;letter-spacing:-.045em;font-weight:800;margin:26px auto 22px;max-width:14ch}
+.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{font-size:clamp(17px,2vw,20px);color:var(--muted);max-width:640px;margin:0 auto 34px}
+.cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.install{margin:30px auto 0;display:inline-flex;align-items:center;gap:12px;font:14px var(--mono);color:var(--muted);padding:10px 14px 10px 18px;border:1px solid var(--line);border-radius:12px;background:rgba(13,13,24,.8)}
+.install b{color:var(--coral);font-weight:400}
+.copy{border:0;background:rgba(255,255,255,.06);color:var(--muted);border-radius:8px;padding:6px 10px;font:12px var(--sans);cursor:pointer}
+.copy:hover{color:var(--text)}
+#wave{display:block;width:100%;height:160px;margin-top:56px}
+
+/* ── sections ── */
+section{padding:96px 0;position:relative}
+.eyebrow{font:600 12px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--coral);margin-bottom:14px}
+h2{font-size:clamp(30px,4.2vw,48px);line-height:1.08;letter-spacing:-.03em;font-weight:750;margin-bottom:16px}
+.sub{color:var(--muted);font-size:18px;max-width:640px}
+.head{margin-bottom:48px}
+.center{text-align:center}.center .sub{margin:0 auto}
+
+/* ── live call demo ── */
+.demo{display:grid;grid-template-columns:1.15fr .85fr;gap:20px;align-items:stretch}
+.panel{background:linear-gradient(180deg,rgba(17,17,31,.95),rgba(13,13,24,.95));border:1px solid var(--line);border-radius:20px;overflow:hidden;position:relative}
+.panel-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted)}
+.panel-head .live{margin-left:auto;display:flex;align-items:center;gap:7px;color:var(--lime);font:600 12px var(--mono)}
+.chat{padding:20px;height:440px;overflow:hidden;display:flex;flex-direction:column;gap:12px;justify-content:flex-end}
+.msg{max-width:84%;padding:11px 15px;border-radius:16px;font-size:15px;line-height:1.45;animation:pop .35s cubic-bezier(.2,.9,.3,1.3) both}
+.msg.caller{align-self:flex-end;background:#1d1d33;border-bottom-right-radius:5px}
+.msg.agent{align-self:flex-start;background:linear-gradient(135deg,rgba(255,138,91,.16),rgba(139,123,255,.16));border:1px solid rgba(255,138,91,.25);border-bottom-left-radius:5px}
+.msg .who{display:block;font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+.tool{align-self:flex-start;font:12.5px/1.5 var(--mono);color:var(--cyan);padding:8px 12px;border:1px dashed rgba(79,209,232,.35);border-radius:10px;background:rgba(79,209,232,.05);animation:pop .3s both;max-width:92%}
+.tool i{font-style:normal;color:var(--dim)}
+.tool.guard{color:var(--lime);border-color:rgba(181,243,107,.35);background:rgba(181,243,107,.05)}
+.tool.stage{color:var(--violet);border-color:rgba(139,123,255,.4);background:rgba(139,123,255,.06)}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}}
+.side{display:flex;flex-direction:column;gap:20px}
+.stages{padding:22px}
+.stages h4,.state h4{font:600 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:16px}
+.stage-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.node{padding:9px 14px;border:1px solid var(--line);border-radius:12px;font:500 14px var(--mono);color:var(--muted);transition:all .35s}
+.node.on{color:#120914;background:var(--grad);border-color:transparent;box-shadow:0 0 28px -4px rgba(255,95,162,.6)}
+.arrow{color:var(--dim)}
+.state{padding:22px;flex:1}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:9px 16px;font:13px var(--mono)}
+.kv span:nth-child(odd){color:var(--dim)}
+.kv b{font-weight:500;color:var(--text);transition:color .3s}
+.kv b.flash{color:var(--lime)}
+.note{font-size:12px;color:var(--dim);margin-top:14px}
+
+/* ── pipeline ── */
+.pipe{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;position:relative}
+.pipe .step{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px 18px;position:relative;overflow:hidden}
+.pipe .step::after{content:"";position:absolute;inset:0;background:var(--grad);opacity:0;transition:opacity .4s}
+.pipe .step.lit{border-color:rgba(255,138,91,.6)}
+.pipe .step.lit::after{opacity:.08}
+.pipe .ico{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(255,255,255,.04);margin-bottom:14px;color:var(--coral)}
+.pipe .ico svg{width:20px;height:20px}
+.pipe h3{font-size:16px;margin-bottom:4px}
+.pipe p{font-size:13.5px;color:var(--muted);line-height:1.5}
+.pipe .ms{font:12px var(--mono);color:var(--dim);margin-top:10px}
+
+/* ── feature grid ── */
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.feat{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px;transition:transform .25s,border-color .25s;position:relative;overflow:hidden}
+.feat:hover{transform:translateY(-4px);border-color:#3a3a5c}
+.feat::before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-90px;top:-90px;background:radial-gradient(circle,var(--c,#ff8a5b) 0,transparent 70%);opacity:.14}
+.feat .ico{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;margin-bottom:18px;background:rgba(255,255,255,.04);color:var(--c,#ff8a5b)}
+.feat .ico svg{width:22px;height:22px}
+.feat h3{font-size:19px;letter-spacing:-.01em;margin-bottom:8px}
+.feat p{color:var(--muted);font-size:15px}
+
+/* ── guards ── */
+.guards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.guard-card{display:flex;gap:18px;padding:22px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,rgba(17,17,31,.9),rgba(13,13,24,.9))}
+.guard-card .x{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:700 14px var(--mono);background:rgba(181,243,107,.08);color:var(--lime);border:1px solid rgba(181,243,107,.25)}
+.guard-card h3{font-size:16px;margin-bottom:4px}
+.guard-card p{font-size:14.5px;color:var(--muted)}
+.guard-card code{font-size:13px;color:var(--coral)}
+
+/* ── code tabs ── */
+.code-wrap{display:grid;grid-template-columns:.8fr 1.2fr;gap:40px;align-items:center}
+.tabs{display:flex;gap:6px;padding:10px;border-bottom:1px solid var(--line)}
+.tab{border:0;background:transparent;color:var(--muted);font:500 13px var(--mono);padding:8px 14px;border-radius:9px;cursor:pointer}
+.tab.on{background:rgba(255,255,255,.07);color:var(--text)}
+pre{padding:22px;overflow:auto;font-size:13.5px;line-height:1.65;color:#cfcde3;max-height:430px}
+pre .k{color:var(--pink)} pre .s{color:var(--lime)} pre .c{color:var(--dim)} pre .n{color:var(--cyan)} pre .v{color:var(--coral)}
+.code-pane{display:none}.code-pane.on{display:block}
+.checks{list-style:none;margin-top:24px;display:grid;gap:12px}
+.checks li{display:flex;gap:12px;color:var(--muted)}
+.checks li::before{content:"";flex:none;width:20px;height:20px;margin-top:2px;border-radius:6px;background:var(--grad);mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3 3 7-7' stroke='black' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3 3 7-7' stroke='black' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+.checks b{color:var(--text);font-weight:600}
+
+/* ── course ── */
+.course{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.lesson{display:block;padding:22px;border:1px solid var(--line);border-radius:18px;background:var(--card);transition:all .25s;position:relative}
+.lesson:hover{border-color:rgba(255,138,91,.5);transform:translateY(-3px)}
+.lesson .num{font:700 13px var(--mono);color:var(--coral)}
+.lesson h3{font-size:16.5px;margin:8px 0 6px;letter-spacing:-.01em}
+.lesson p{font-size:13.5px;color:var(--muted);line-height:1.5}
+.lesson.tut{grid-column:span 4;display:flex;align-items:center;gap:24px;background:linear-gradient(110deg,rgba(255,138,91,.14),rgba(139,123,255,.14));border-color:rgba(255,138,91,.35)}
+.lesson.tut h3{font-size:22px;margin:4px 0}
+.lesson.tut .go{margin-left:auto;flex:none}
+
+/* ── quickstart ── */
+.term{max-width:820px;margin:0 auto}
+.term pre{font-size:14px;max-height:none}
+.term .p{color:var(--coral)} .term .o{color:var(--muted)} .term .a{color:var(--lime)}
+
+/* ── footer ── */
+.final{text-align:center;padding:110px 0}
+.final h2{max-width:16ch;margin:0 auto 18px}
+footer{border-top:1px solid var(--line);padding:36px 0;color:var(--dim);font-size:14px}
+footer .wrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+footer .right{margin-left:auto;display:flex;gap:20px}
+footer a:hover{color:var(--text)}
+
+.reveal{opacity:0;transform:translateY(24px);transition:opacity .8s ease,transform .8s ease}
+.reveal.in{opacity:1;transform:none}
+
+@media (max-width:960px){
+  .demo,.code-wrap{grid-template-columns:1fr}
+  .pipe{grid-template-columns:repeat(2,1fr)}
+  .features{grid-template-columns:1fr 1fr}
+  .course{grid-template-columns:1fr 1fr}
+  .lesson.tut{grid-column:span 2;flex-direction:column;align-items:flex-start}
+  .lesson.tut .go{margin-left:0}
+  nav .links{display:none}
+}
+@media (max-width:620px){
+  .features,.guards,.course{grid-template-columns:1fr}
+  .lesson.tut{grid-column:span 1}
+  .pipe{grid-template-columns:1fr}
+  section{padding:72px 0}
+  .chat{height:480px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="#">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" x2="1"><stop offset="0" stop-color="#ff8a5b"/><stop offset=".5" stop-color="#ff5fa2"/><stop offset="1" stop-color="#8b7bff"/></linearGradient></defs><g fill="url(#lg)"><rect x="3" y="12" width="4" height="8" rx="2"/><rect x="9.5" y="7" width="4" height="18" rx="2"/><rect x="16" y="2" width="4" height="28" rx="2"/><rect x="22.5" y="9" width="4" height="14" rx="2"/></g></svg>
+      PJ Voice
+    </a>
+    <div class="links">
+      <a href="#demo">Demo</a>
+      <a href="#how">How it works</a>
+      <a href="#safety">Safety</a>
+      <a href="#learn">Learn</a>
+      <a href="https://github.com/pjsofts/pj-voice/tree/main/docs/guide">Docs</a>
+    </div>
+    <a class="btn btn-ghost" href="https://github.com/pjsofts/pj-voice">
+      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="aurora"><span></span><span></span><span></span></div>
+  <div class="grid-bg"></div>
+  <div class="wrap">
+    <span class="pill"><span class="dot"></span> <b>v0.1</b> · open source · MIT</span>
+    <h1>Voice agents that <span class="grad">actually do the work.</span></h1>
+    <p class="lede">PJ Voice is an open source AI phone agent. It answers calls, looks up the caller, checks the calendar, and books, moves or cancels real appointments, with correctness enforced in code, not hoped for in a prompt.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/pjsofts/pj-voice#quick-start-text-mode-no-phone-needed">Get started →</a>
+      <a class="btn btn-ghost" href="#learn">Learn to build voice agents</a>
+    </div>
+    <div class="install"><span><b>$</b> pip install -e '.[voice]' &amp;&amp; pjvoice chat examples/demo-salon.yaml</span><button class="copy" data-copy="git clone https://github.com/pjsofts/pj-voice && cd pj-voice && pip install -e '.[voice]' && pjvoice chat examples/demo-salon.yaml">Copy</button></div>
+    <canvas id="wave" aria-hidden="true"></canvas>
+  </div>
+</header>
+
+<!-- live demo -->
+<section id="demo">
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">Watch a call</div>
+      <h2>Tools, stages and guards,<br>live in one conversation.</h2>
+      <p class="sub">A scripted example call to the bundled demo salon. The tool calls, stage switches and guard responses mirror what the runtime and the reference tool server really do.</p>
+    </div>
+    <div class="demo reveal">
+      <div class="panel">
+        <div class="panel-head">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+          Demo Salon · +1 555-0100
+          <span class="live"><span class="dot"></span><span id="timer">00:00</span></span>
+        </div>
+        <div class="chat" id="chat" aria-live="polite"></div>
+      </div>
+      <div class="side">
+        <div class="panel stages">
+          <h4>Stage graph</h4>
+          <div class="stage-row">
+            <span class="node on" data-stage="triage">triage</span><span class="arrow">⇄</span>
+            <span class="node" data-stage="booking">booking</span><span class="arrow">⇄</span>
+            <span class="node" data-stage="manage">manage</span>
+          </div>
+          <p class="note">Each stage has its own instructions and tool subset. Handoffs are silent, with loop caps.</p>
+        </div>
+        <div class="panel state">
+          <h4>Server-side session</h4>
+          <div class="kv">
+            <span>session_id</span><b>call-7f3a</b>
+            <span>caller_phone</span><b id="s-phone">+15550142 <i style="color:var(--dim);font-style:normal">(injected)</i></b>
+            <span>customer</span><b id="s-cust">—</b>
+            <span>offered slots</span><b id="s-offer">0</b>
+            <span>bookings</span><b id="s-book">0</b>
+          </div>
+          <p class="note">The model never handles customer IDs. The tool server binds identity to the call.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- pipeline -->
+<section id="how">
+  <div class="wrap">
+    <div class="head center reveal">
+      <div class="eyebrow">How it works</div>
+      <h2>A streaming pipeline, tuned for the phone.</h2>
+      <p class="sub">Callers start hanging up after about a second of silence. Every stage streams, so the agent starts speaking while it's still thinking.</p>
+    </div>
+    <div class="pipe reveal" id="pipe">
+      <div class="step"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg></div><h3>SIP / WebRTC</h3><p>Phone or browser audio into a LiveKit room.</p><div class="ms">transport</div></div>
+      <div class="step"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h2M6 8v8M10 5v14M14 8v8M18 10v4M22 12h0"/></svg></div><h3>VAD + turns</h3><p>Silero VAD and a semantic turn detector decide when you've finished.</p><div class="ms">endpointing</div></div>
+      <div class="step"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h10M4 17h13"/></svg></div><h3>Speech to text</h3><p>Streaming transcription with partial results.</p><div class="ms">STT</div></div>
+      <div class="step"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg></div><h3>LLM + tools</h3><p>Stage-scoped instructions and tools, with a fallback model.</p><div class="ms">reasoning · actions</div></div>
+      <div class="step"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg></div><h3>Text to speech</h3><p>Streams audio sentence by sentence, with repeat suppression.</p><div class="ms">TTS</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- features -->
+<section>
+  <div class="wrap">
+    <div class="head reveal">
+      <div class="eyebrow">What's inside</div>
+      <h2>Everything between "hello"<br>and a booking in the calendar.</h2>
+    </div>
+    <div class="features">
+      <div class="feat reveal" style="--c:#ff8a5b"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M7.3 11l9.4-4M7.3 13l9.4 4"/></svg></div><h3>Stage graphs</h3><p>Split a call into steps like triage → booking → manage. Small prompts, focused tools, silent handoffs, loop caps.</p></div>
+      <div class="feat reveal" style="--c:#ff5fa2"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg></div><h3>Injected arguments</h3><p>Mark a parameter <code>x-injected</code> and the model never sees it. It can't attach a booking to the wrong customer.</p></div>
+      <div class="feat reveal" style="--c:#8b7bff"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/><path d="M7 12h10"/></svg></div><h3>One brain, many channels</h3><p>The same config runs phone calls, browser calls, SMS/chat turns and evals, through one shared engine.</p></div>
+      <div class="feat reveal" style="--c:#4fd1e8"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v6H4zM4 14h16v6H4z"/><path d="M8 7h.01M8 17h.01"/></svg></div><h3>Multi-tenant control plane</h3><p>Phone-number routing, live tenant configs via webhook, and last-known-good fallback, so a tenant outage never drops a call.</p></div>
+      <div class="feat reveal" style="--c:#b5f36b"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg></div><h3>Simulated-caller evals</h3><p>An LLM plays the caller; weighted validators check tools and final state. Catch regressions before your callers do.</p></div>
+      <div class="feat reveal" style="--c:#ffb84d"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg></div><h3>Bring any model</h3><p>LiveKit Inference model strings for STT, LLM and TTS, plus any OpenAI-compatible API in text mode.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- safety -->
+<section id="safety">
+  <div class="wrap">
+    <div class="head center reveal">
+      <div class="eyebrow">Safety by design</div>
+      <h2>Prompts ask. <span class="grad">Code enforces.</span></h2>
+      <p class="sub">Eventually the model will invent a time, reuse the wrong ID, or book twice. The reference tool server shows the guards that make that harmless.</p>
+    </div>
+    <div class="guards">
+      <div class="guard-card reveal"><div class="x">01</div><div><h3>Offered-slot guard</h3><p>Only slots this call was actually offered can be booked. Invented times are rejected with "call <code>check_availability</code> first".</p></div></div>
+      <div class="guard-card reveal"><div class="x">02</div><div><h3>Server-side identity</h3><p>The caller is bound to the <code>session_id</code>. Booking, rescheduling and cancelling read it from there, never from the model.</p></div></div>
+      <div class="guard-card reveal"><div class="x">03</div><div><h3>Re-check before write</h3><p>Taken in the meantime? The error carries fresh alternatives, so the agent offers a new time in the same turn.</p></div></div>
+      <div class="guard-card reveal"><div class="x">04</div><div><h3>Idempotent bookings</h3><p>A repeated <code>book_appointment</code> after an interruption returns the existing booking. No duplicates.</p></div></div>
+      <div class="guard-card reveal"><div class="x">05</div><div><h3>No-progress nudge</h3><p>Same call, same arguments, same answer? The runtime tells the model so, instead of letting it loop.</p></div></div>
+      <div class="guard-card reveal"><div class="x">06</div><div><h3>Hop caps &amp; fallbacks</h3><p>Stage ping-pong is refused, a failing LLM falls back to another provider, and tool timeouts become a polite recovery.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- code -->
+<section>
+  <div class="wrap code-wrap">
+    <div class="reveal">
+      <div class="eyebrow">Developer experience</div>
+      <h2>A YAML file, an HTTP endpoint, a phone number.</h2>
+      <p class="sub">Describe the agent in config. Put business logic behind a tiny HTTP protocol in any language. Test it in your terminal before it ever rings.</p>
+      <ul class="checks">
+        <li><span><b>Plain HTTP tools.</b> One JSON envelope in, text for the model out.</span></li>
+        <li><span><b>Test without a phone.</b> <code>pjvoice chat</code> runs the same engine in text.</span></li>
+        <li><span><b>CI-friendly.</b> Scripted-LLM unit tests need no API keys.</span></li>
+      </ul>
+    </div>
+    <div class="panel reveal">
+      <div class="tabs" role="tablist">
+        <button class="tab on" data-tab="cfg">assistant.yaml</button>
+        <button class="tab" data-tab="tool">server.py</button>
+        <button class="tab" data-tab="eval">eval.yaml</button>
+      </div>
+<pre class="code-pane on" id="cfg"><span class="n">id</span>: <span class="s">trattoria</span>
+<span class="n">greeting</span>: <span class="s">Good evening, Trattoria Demo. Book a table?</span>
+<span class="n">models</span>: {<span class="n">llm</span>: <span class="s">openai/gpt-4.1-mini</span>, <span class="n">fallback_llm</span>: <span class="s">openai/gpt-4o-mini</span>}
+<span class="n">instructions</span>: <span class="s">|</span>
+  <span class="s">Ask for date and party size, call check_tables,</span>
+  <span class="s">offer two or three times, confirm, then reserve.</span>
+<span class="n">tools</span>:
+  - <span class="n">name</span>: <span class="s">reserve</span>
+    <span class="n">url</span>: <span class="s">${RESTAURANT_TOOLS_URL}</span>
+    <span class="n">parameters</span>:
+      <span class="n">type</span>: <span class="s">object</span>
+      <span class="n">properties</span>:
+        <span class="n">option_id</span>: {<span class="n">type</span>: <span class="s">string</span>}
+        <span class="n">name</span>: {<span class="n">type</span>: <span class="s">string</span>}
+        <span class="n">caller_phone</span>: {<span class="n">type</span>: <span class="s">string</span>, <span class="v">x-injected</span>: <span class="s">caller_phone</span>}  <span class="c"># hidden from the model</span></pre>
+<pre class="code-pane" id="tool"><span class="k">def</span> <span class="n">reserve</span>(s: Session, args: dict) -> str:
+    <span class="k">if</span> s.booking_id:                          <span class="c"># idempotent</span>
+        <span class="k">return</span> <span class="s">"Already reserved. Do not book again."</span>
+    option = s.offered.get(args.get(<span class="s">"option_id"</span>))
+    <span class="k">if</span> option <span class="k">is</span> None:                        <span class="c"># no invented times</span>
+        <span class="k">raise</span> ToolError(<span class="s">"Not offered on this call. Call check_tables first."</span>)
+    <span class="k">with</span> _lock:                               <span class="c"># re-check before write</span>
+        table = free_table(*option)
+        <span class="k">if</span> table <span class="k">is</span> None:
+            <span class="k">raise</span> ToolError(<span class="s">"Just taken. Call check_tables again."</span>)
+        ...
+    <span class="k">return</span> <span class="s">f"Reserved: {describe(b)}. Read it back to the caller."</span></pre>
+<pre class="code-pane" id="eval"><span class="n">name</span>: <span class="s">party of four books Friday evening</span>
+<span class="n">persona</span>: <span class="s">></span>
+  <span class="s">You are Sam. You want a table for four this Friday</span>
+  <span class="s">around 7 PM. Accept the closest time offered.</span>
+<span class="n">validators</span>:
+  - {<span class="n">type</span>: <span class="s">tool_called</span>, <span class="n">tool</span>: <span class="s">reserve</span>, <span class="n">weight</span>: <span class="v">3</span>}
+  - {<span class="n">type</span>: <span class="s">transcript_excludes</span>, <span class="n">pattern</span>: <span class="s">"option_id"</span>, <span class="n">weight</span>: <span class="v">1</span>}
+
+<span class="c">$ pjvoice eval assistant.yaml evals/ --tools-app server:app --repeat 3</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- learn -->
+<section id="learn">
+  <div class="wrap">
+    <div class="head center reveal">
+      <div class="eyebrow">Free course</div>
+      <h2>Learn to build voice agents.</h2>
+      <p class="sub">A practical guide from first principles to production, where every chapter maps to working code in the repo.</p>
+    </div>
+    <div class="course">
+      <a class="lesson reveal" href="https://github.com/pjsofts/pj-voice/blob/main/docs/learn/01-how-voice-agents-work.md"><span class="num">01</span><h3>How voice agents work</h3><p>The STT → LLM → TTS pipeline and the latency budget.</p></a>
+      <a class="lesson reveal" href="https://github.com/pjsofts/pj-voice/blob/main/docs/learn/02-turn-taking.md"><span class="num">02</span><h3>Turn-taking</h3><p>VAD, endpointing, interruptions and echo.</p></a>
+      <a class="lesson reveal" href="https://github.com/pjsofts/pj-voice/blob/main/docs/learn/03-tools-and-actions.md"><span class="num">03</span><h3>Tools &amp; actions</h3><p>Designing tools for voice; safety on the server.</p></a>
+      <a class="lesson reveal" href="https://github.com/pjsofts/pj-voice/blob/main/docs/learn/04-conversation-design.md"><span class="num">04</span><h3>Conversation design</h3><p>Prompts, stages and confirmations for the ear.</p></a>
+      <a class="lesson reveal" href="https://github.com/pjsofts/pj-voice/blob/main/docs/learn/05-telephony.md"><span class="num">05</span><h3>Telephony</h3><p>PSTN, SIP trunks, caller ID, transfers, consent.</p></a>
+      <a class="lesson reveal" href="https://github.com/pjsofts/pj-voice/blob/main/docs/learn/06-testing-and-evals.md"><span class="num">06</span><h3>Testing &amp; evals</h3><p>Scripted tests, simulated callers, regressions.</p></a>
+      <a class="lesson reveal" href="https://github.com/pjsofts/pj-voice/blob/main/docs/learn/07-production.md"><span class="num">07</span><h3>Production</h3><p>Reliability, observability, cost and privacy.</p></a>
+      <a class="lesson reveal" href="https://github.com/pjsofts/pj-voice/blob/main/docs/guide/design-decisions.md"><span class="num">++</span><h3>Design decisions</h3><p>Why PJ Voice is built the way it is.</p></a>
+      <a class="lesson tut reveal" href="https://github.com/pjsofts/pj-voice/blob/main/docs/learn/tutorial-restaurant.md">
+        <div><span class="num">HANDS-ON TUTORIAL · ~45 MIN</span><h3>Build a restaurant reservations agent</h3><p>Write a tool server, configure the assistant, chat with it, add evals, and put it on a phone number.</p></div>
+        <span class="btn btn-primary go">Start the tutorial →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- quickstart -->
+<section>
+  <div class="wrap">
+    <div class="head center reveal">
+      <div class="eyebrow">Quick start</div>
+      <h2>Talking to an agent in two minutes.</h2>
+    </div>
+    <div class="panel term reveal">
+      <div class="panel-head">terminal</div>
+<pre><span class="p">$</span> git clone https://github.com/pjsofts/pj-voice &amp;&amp; cd pj-voice
+<span class="p">$</span> uv venv &amp;&amp; uv pip install -e '.[dev]'
+<span class="p">$</span> export OPENAI_API_KEY=sk-...
+<span class="p">$</span> pjvoice tools &amp;                         <span class="c"># demo booking server on :8100</span>
+<span class="p">$</span> pjvoice chat examples/demo-salon.yaml --show-stage
+<span class="a">agent&gt;</span> <span class="o">Thanks for calling Demo Salon. How can I help you today?</span>
+<span class="p">you&gt;</span>   <span class="o">I'd like a haircut on Thursday morning</span>
+<span class="a">agent&gt;</span> <span class="o">…</span>
+
+<span class="c"># ready for real calls?</span>
+<span class="p">$</span> uv pip install -e '.[voice]' &amp;&amp; pjvoice control &amp; pjvoice worker dev</pre>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap reveal">
+    <h2>Build the agent your callers <span class="grad">won't hang up on.</span></h2>
+    <p class="sub" style="margin:0 auto 32px">Open source, MIT licensed, and built to be read. Star it, fork it, ship it.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/pjsofts/pj-voice">★ Star on GitHub</a>
+      <a class="btn btn-ghost" href="https://github.com/pjsofts/pj-voice/blob/main/SPEC.md">Read the spec</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>PJ Voice · MIT License</span>
+    <span>Built by <a href="https://github.com/pjsofts" style="color:var(--muted)">Pouria Jahandideh</a></span>
+    <div class="right">
+      <a href="https://github.com/pjsofts/pj-voice">GitHub</a>
+      <a href="https://github.com/pjsofts/pj-voice/tree/main/docs/guide">Docs</a>
+      <a href="https://github.com/pjsofts/pj-voice/blob/main/docs/learn/README.md">Course</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* copy button */
+  document.querySelectorAll('.copy').forEach(b => b.addEventListener('click', () => {
+    navigator.clipboard?.writeText(b.dataset.copy).then(() => { b.textContent = 'Copied'; setTimeout(() => b.textContent = 'Copy', 1400); });
+  }));
+
+  /* tabs */
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+    document.querySelectorAll('.code-pane').forEach(p => p.classList.toggle('on', p.id === t.dataset.tab));
+  }));
+
+  /* reveal on scroll */
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  /* hero waveform */
+  const cv = document.getElementById('wave'), ctx = cv.getContext('2d');
+  let W, H, t = 0;
+  const resize = () => { const r = devicePixelRatio || 1; W = cv.clientWidth; H = cv.clientHeight; cv.width = W * r; cv.height = H * r; ctx.setTransform(r, 0, 0, r, 0, 0); };
+  resize(); addEventListener('resize', resize);
+  const colors = ['#ff8a5b', '#ff5fa2', '#8b7bff'];
+  const drawWave = () => {
+    ctx.clearRect(0, 0, W, H);
+    const bars = Math.floor(W / 7), mid = H / 2;
+    for (let i = 0; i < bars; i++) {
+      const x = i * 7 + 2, p = i / bars;
+      const env = Math.sin(p * Math.PI) ** 1.4;
+      const speech = (Math.sin(t * 1.3 + i * .21) * .5 + .5) * (Math.sin(t * .7 + i * .05) * .5 + .5);
+      const h = 4 + env * speech * (H * .8) * (.55 + .45 * Math.sin(t * 2.1 + i * .9));
+      const g = ctx.createLinearGradient(x, mid - h / 2, x, mid + h / 2);
+      const c = colors[Math.floor(p * 3) % 3];
+      g.addColorStop(0, c + '00'); g.addColorStop(.5, c); g.addColorStop(1, c + '00');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, mid - h / 2, 3, h, 2) : ctx.rect(x, mid - h / 2, 3, h); ctx.fill();
+    }
+    t += .025;
+    if (!reduce) requestAnimationFrame(drawWave);
+  };
+  drawWave();
+
+  /* pipeline pulse */
+  const steps = [...document.querySelectorAll('#pipe .step')];
+  let si = 0;
+  if (!reduce) setInterval(() => { steps.forEach((s, i) => s.classList.toggle('lit', i === si)); si = (si + 1) % steps.length; }, 900);
+
+  /* live call demo */
+  const chat = document.getElementById('chat'), timer = document.getElementById('timer');
+  const setStage = s => document.querySelectorAll('.node').forEach(n => n.classList.toggle('on', n.dataset.stage === s));
+  const flash = (id, v) => { const el = document.getElementById(id); el.textContent = v; el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 900); };
+  const script = [
+    ['agent', 'Thanks for calling Demo Salon. How can I help you today?'],
+    ['caller', "Hi! Can I get a haircut Thursday morning?"],
+    ['tool', 'find_customer(<i>caller_phone ← injected</i>)', () => flash('s-cust', 'none yet')],
+    ['tool stage', '→ to_booking <i>(silent handoff)</i>', () => setStage('booking')],
+    ['agent', "Happy to help! I don't see a profile yet. What's your name?"],
+    ['caller', 'Dana Kim.'],
+    ['tool', 'create_customer(name="Dana Kim")', () => flash('s-cust', 'Dana Kim')],
+    ['tool', 'check_availability(service_id="haircut", date="2026-11-19")', () => flash('s-offer', '6')],
+    ['agent', 'Thanks, Dana. Thursday I have 9, 9:30 or 10 AM. Which works?'],
+    ['caller', 'Let’s do 9:15.'],
+    ['tool', 'book_appointment(slot_id="haircut|sam|…T1415Z")'],
+    ['tool guard', '✗ server guard: slot not offered on this call → model recovers'],
+    ['agent', "I don't have 9:15. The closest are 9 or 9:30. Which would you prefer?"],
+    ['caller', '9:30 then.'],
+    ['agent', 'Great: a haircut with Sam, Thursday the 19th at 9:30 AM. Shall I book it?'],
+    ['caller', 'Yes please.'],
+    ['tool', 'book_appointment(slot_id="haircut|sam|…T1430Z")', () => flash('s-book', '1')],
+    ['agent', "You're booked for Thursday at 9:30 with Sam. Anything else?"],
+    ['caller', "That's all, thanks!"],
+    ['agent', 'Have a great day, Dana. Goodbye!'],
+    ['tool', 'end_call(reason="caller finished")'],
+  ];
+  let idx = 0, secs = 0, running = false;
+  const reset = () => { chat.innerHTML = ''; idx = 0; secs = 0; setStage('triage'); ['s-cust'].forEach(id => document.getElementById(id).textContent = '—'); ['s-offer', 's-book'].forEach(id => document.getElementById(id).textContent = '0'); };
+  const add = ([kind, text, fx]) => {
+    const el = document.createElement('div');
+    if (kind.startsWith('tool')) { el.className = kind; el.innerHTML = text; }
+    else { el.className = 'msg ' + kind; el.innerHTML = `<span class="who">${kind === 'agent' ? 'PJ Voice' : 'Caller'}</span>${text}`; }
+    chat.appendChild(el);
+    while (chat.scrollHeight > chat.clientHeight + 4 && chat.children.length > 1) chat.removeChild(chat.firstChild);
+    fx && fx();
+  };
+  const tick = () => {
+    if (idx >= script.length) { setTimeout(() => { reset(); tick(); }, 4200); return; }
+    const item = script[idx++]; add(item);
+    const delay = item[0].startsWith('tool') ? 900 : 1300 + item[1].length * 18;
+    setTimeout(tick, reduce ? 0 : delay);
+  };
+  setInterval(() => { if (running) { secs++; timer.textContent = `${String(secs / 60 | 0).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`; } }, 1000);
+  const demoIO = new IntersectionObserver(es => { if (es[0].isIntersecting && !running) { running = true; if (reduce) { script.forEach(add); } else tick(); } }, { threshold: .3 });
+  demoIO.observe(chat);
+})();
+</script>
+</body>
+</html>
